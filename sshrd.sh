@@ -196,7 +196,7 @@ if [ "$1" = 'boot' ]; then
     exit
 fi
 
-if [ "$1" = 'set--generator' ]; then
+if [ "$1" = 'set-generator' ]; then
     if [ ! -e sshramdisk/iBSS.img4 ]; then
         echo "[-] Please create an SSH ramdisk first!"
         exit
