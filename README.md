@@ -51,6 +51,7 @@ sudo usbmuxd -p -f
 - Erase all data from your device: `./sshrd.sh reset`
 - Dump onboard SHSH blobs: `./sshrd.sh dump-blobs`
 - Delete old SSH ramdisk: `./sshrd.sh clean`
+- Set your desired generator `./sshrd.sh set--generator`
 
 # Other Stuff
 

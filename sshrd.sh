@@ -196,6 +196,63 @@ if [ "$1" = 'boot' ]; then
     exit
 fi
 
+if [ "$1" = 'set--generator' ]; then
+    if [ ! -e sshramdisk/iBSS.img4 ]; then
+        echo "[-] Please create an SSH ramdisk first!"
+        exit
+    fi
+
+    major=$(cat sshramdisk/version.txt | awk -F. '{print $1}')
+    minor=$(cat sshramdisk/version.txt | awk -F. '{print $2}')
+    patch=$(cat sshramdisk/version.txt | awk -F. '{print $3}')
+    major=${major:-0}
+    minor=${minor:-0}
+    patch=${patch:-0}
+    
+    if [ "$check" = '0x8960' ]; then
+        "$oscheck"/ipwnder > /dev/null
+    else
+        "$oscheck"/gaster pwn > /dev/null
+    fi
+    "$oscheck"/gaster reset > /dev/null
+    "$oscheck"/irecovery -f sshramdisk/iBSS.img4
+    sleep 2
+    "$oscheck"/irecovery -f sshramdisk/iBEC.img4
+
+    if [ "$check" = '0x8010' ] || [ "$check" = '0x8015' ] || [ "$check" = '0x8011' ] || [ "$check" = '0x8012' ]; then
+        "$oscheck"/irecovery -c go
+    fi
+    echo "Please enter your desired generator."
+
+    read generator
+
+    echo "Your generator is $generator"
+    echo "Current nonce"
+    "$oscheck"/irecovery -q | grep NONC
+    echo "Setting nonce to $generator"
+    "$oscheck"/irecovery -c "bgcolor 51 153 255"
+    sleep 1
+    "$oscheck"/irecovery -c "setenv com.apple.System.boot-nonce $generator"
+    sleep 1
+    "$oscheck"/irecovery -c "saveenv"
+    sleep 1
+    "$oscheck"/irecovery -c "setenv auto-boot false"
+    sleep 1
+    "$oscheck"/irecovery -c "saveenv"
+    sleep 1
+    "$oscheck"/irecovery -c "reset"
+    echo "Waiting for device to restart into recovery mode"
+    sleep 7
+    echo "New nonce"
+    "$oscheck"/irecovery -q | grep NONC
+
+    echo "We are done!"
+    echo ""
+    echo "You can now futurerestore to the firmware that this SHSH is vaild for"
+    echo "Assuming that signed SEP and Baseband are compatible"
+    exit
+fi
+
 if [ -z "$1" ]; then
     printf "1st argument: iOS version for the ramdisk\nExtra arguments:\nreset: wipes the device, without losing version.\nTrollStore: install trollstore to system app\n"
     exit
